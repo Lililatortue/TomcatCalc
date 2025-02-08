@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="TomcatCalc" default="compile" basedir="." >
+<property file="build.properties"/>
+<property name ="src.dir" value="src/main"/>
+<property name ="build.dir" value="build"/>
+<property name ="dist.dir" value="dist"/>
+<property name="web.dir"    value="${src.dir}/webapp" />
+<property name ="lib.dir" value="${web.dir}/WEB-INF/lib"/>
+<property name = "Tomcat.home" value="${catalina.home}"/>
+<property name="war.file"  value="${dist.dir}/calcWebApp.war" />
+
+<!--________________________________library Path_____________________________________-->
+<path id="libpath">
+		<fileset dir="${Tomcat.home}/lib">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+	
+<!--___________________________________CLEAN_______________________________________-->
+<!-- pour delete le build folder-->
+<target name="clean">
+	<echo message="cleaning phase"/>
+	<delete includeemptydirs="true" failonerror="false">
+		<fileset dir="${build.dir}"/>
+	</delete>
+</target>
+
+
+<!--__________________________________COMPILE______________________________________-->
+	<target name="webBuild" >
+		<mkdir dir="${build.dir}/WEB-INF/classes"/>
+		<mkdir dir="${build.dir}/WEB-INF/lib"/>
+	</target>
+	
+	<target name="copylib" depends="webBuild">
+		<copy todir="${build.dir}/WEB-INF/lib">
+			<fileset dir="${build.dir}/WEB-INF/lib">
+				<include name="*.jar"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="compile" depends="copylib">
+		<javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" includeantruntime="false" classpathref="libpath"/>
+
+	</target>
+
+
+<!--__________________________________DEPLOY_______________________________________-->
+	<target name="prepare">
+		<mkdir dir="${dist.dir}"/>
+		<copy todir="${build.dir}">
+            		<fileset dir="${web.dir}" />
+        	</copy>
+	</target>
+	
+	<target name="dist" depends="prepare">
+    	   <echo message="Creating WAR file at ${war.file}" />
+    		<war destfile="${war.file}" webxml="${build.dir}/WEB-INF/web.xml">
+        		<fileset dir="${build.dir}" />
+    		</war>
+
+	</target>
+	
+		<!--deploy-->
+	<target name="deploy" depends="dist">
+		<echo message="files have been deployed to tomcatserver as ${war.file}"/>
+		<copy file="${war.file}" todir="${Tomcat.home}/webapps" />
+	</target>
+
+</project>
